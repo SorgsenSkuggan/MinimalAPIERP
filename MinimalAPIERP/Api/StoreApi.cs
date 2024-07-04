@@ -48,13 +48,13 @@ internal static class StoreApi{
         //            : TypedResults.NotFound())
         //    .WithOpenApi();
 
-        group.MapGet("/storesc1", async Task<Results<Ok<IList<Store>>, NotFound>> (AppDbContext db, int pageSize = 10, int page = 0) =>
-            await db.Stores
+        group.MapGet("/storesc1", async Task<Results<Ok<IList<StoreDto>>, NotFound>> (AppDbContext db, IMapper mapper, int pageSize = 10, int page = 0) =>
+            mapper.Map<StoreDto>(await db.Stores
             .Skip(page * pageSize)
             .Take(pageSize)
             .Select(store => new { store.StoreGuid, store.Name })
-            .ToListAsync()
-                is IList<Store> stores
+            .ToListAsync())
+                is IList<StoreDto> stores
                     ? TypedResults.Ok(stores)
                     : TypedResults.NotFound())
             .WithName("GetStoreListPaginated")
@@ -75,14 +75,13 @@ internal static class StoreApi{
         //})
         //.WithOpenApi();
 
-        group.MapGet("/storesd", async Task<Results<Ok<IList<Store>>, NotFound>> (AppDbContext db) =>
-            await db.Stores.Include(s => s.Rainchecks).ToListAsync()
-                is IList<Store> stores
+        group.MapGet("/storesd", async Task<Results<Ok<IList<StoreDto>>, NotFound>> (AppDbContext db, IMapper mapper) =>
+            mapper.Map<StoreDto>(await db.Stores.Include(s => s.Rainchecks).ToListAsync())
+                is IList<StoreDto> stores
                     ? TypedResults.Ok(stores)
                     : TypedResults.NotFound())
             .WithName("GetStoreListRainchecks")
             .WithOpenApi();
-        //Error al intentar mapearlo
 
         //group.MapGet("/storee", async (AppDbContext db) =>
         //    await db.Stores.Include(s => s.Rainchecks).ToListAsync()
@@ -91,9 +90,9 @@ internal static class StoreApi{
         //            : Results.NotFound())
         //    .WithOpenApi();
 
-        group.MapGet("/storesf", async (AppDbContext db) =>
-            await db.Stores.Include(s => s.Rainchecks).ToListAsync()
-                is IList<Store> stores
+        group.MapGet("/storesf", async (AppDbContext db, IMapper mapper) =>
+            mapper.Map<StoreDto>(await db.Stores.Include(s => s.Rainchecks).ToListAsync())
+                is IList<StoreDto> stores
                     ? Results.Json(stores, JsonConfiguration.GetAPIJsonSerializerOptions())
                     : Results.NotFound())
             .WithName("GetStoreListWithJsonOptions")
@@ -103,8 +102,7 @@ internal static class StoreApi{
             var store = new Store{
                 StoreId = db.Stores.Last().StoreId + 1,
                 StoreGuid = Guid.NewGuid(),
-                Name = newStore.Name,
-                Rainchecks = newStore.Rainchecks
+                Name = newStore.Name
             };
 
             db.Stores.Add(store);

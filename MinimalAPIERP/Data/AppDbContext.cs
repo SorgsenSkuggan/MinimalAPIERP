@@ -7,8 +7,7 @@ namespace ERP.Data;
 
 public partial class AppDbContext : DbContext
 {
-    public AppDbContext()
-    {
+    public AppDbContext(){
     }
 
     public AppDbContext(DbContextOptions<AppDbContext> options)
@@ -29,9 +28,8 @@ public partial class AppDbContext : DbContext
 
     public virtual DbSet<Store> Stores { get; set; }
 
-    //Puede que esto no haga falta al no usar inyección de dependencias de DbContext.
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-        => optionsBuilder.UseSqlServer("Data Source=(localdb)\\mssqllocaldb;Initial Catalog=PartsUnlimitedWebsite;Integrated Security=true");
+        => optionsBuilder.UseSqlServer(@"Server=(localdb)\mssqllocaldb;Database=PartsUnlimitedWebsite;ConnectRetryCount=0");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -83,6 +81,7 @@ public partial class AppDbContext : DbContext
         });
 
         OnModelCreatingPartial(modelBuilder);
+
     }
 
     partial void OnModelCreatingPartial(ModelBuilder modelBuilder);

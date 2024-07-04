@@ -17,13 +17,13 @@ public partial class Raincheck
 
     public string? Name { get; set; }
 
-    public int ProductId { get; set; }
+    public Guid ProductGuid { get; set; }
 
     public int Count { get; set; }
 
     public double SalePrice { get; set; }
 
-    public int StoreId { get; set; }
+    public Guid StoreGuid { get; set; }
 
     [ForeignKey("ProductId")]
     [InverseProperty("Rainchecks")]

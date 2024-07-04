@@ -30,18 +30,18 @@ internal static class ProductApi
         .WithOpenApi();
 
         group.MapGet("/products/", async (AppDbContext db, IMapper mapper) =>
-            mapper.Map<ProductDto>( await db.Products.ToListAsync()
+            mapper.Map<IList<ProductDto>>( await db.Products.ToListAsync()
                 is IList<ProductDto> products
                     ? Results.Json(products, JsonConfiguration.GetAPIJsonSerializerOptions())
                     : Results.NotFound())
             ).WithOpenApi();
 
-        group.MapPost("/products/", async Task<Created<Product>> (AppDbContext db, Product newProduct) => {
+        group.MapPost("/products/", async Task<Created<Product>> (AppDbContext db, Product newProduct, IMapper mapper) => {
             var product = new Product{
                 ProductId = db.Products.Last().ProductId + 1,
                 ProductGuid = Guid.NewGuid(),
                 SkuNumber = newProduct.SkuNumber,
-                CategoryId = newProduct.CategoryId,
+                CategoryGuid = newProduct.CategoryGuid,
                 RecommendationId = newProduct.RecommendationId,
                 Title = newProduct.Title,
                 Price = newProduct.Price,
@@ -51,11 +51,7 @@ internal static class ProductApi
                 Created = newProduct.Created.ToString().IsNullOrEmpty() ? DateTime.Now : newProduct.Created,
                 ProductDetails = newProduct.ProductDetails,
                 Inventory = newProduct.Inventory,
-                LeadTime = newProduct.LeadTime,
-                CartItems = newProduct.CartItems,
-                Category = newProduct.Category,
-                OrderDetails = newProduct.OrderDetails,
-                Rainchecks = newProduct.Rainchecks,
+                LeadTime = newProduct.LeadTime
             };
 
             db.Products.Add(product);
@@ -76,22 +72,32 @@ internal static class ProductApi
         .WithName("DeleteProduct")
         .WithOpenApi();
 
-        //group.MapPut("products/{guid}", async Task<Results<Ok, NotFound, BadRequest>> (AppDbContext db, Guid guid, Product product) => {
-        //    if (guid != product.ProductGuid)
-        //    {
-        //        return TypedResults.BadRequest();
-        //    }
+        group.MapPut("products/{guid}", async Task<Results<Ok, NotFound, BadRequest>> (AppDbContext db, Guid guid, Product product) =>
+        {
+            if (guid != product.ProductGuid){
+                return TypedResults.BadRequest();
+            }
 
-        //    var rowsAffected = await db.Products.Where(p => p.ProductGuid == guid)
-        //                                     .ExecuteUpdateAsync(updates => updates
-        //                                               .SetProperty(p => p.SkuNumber, product.SkuNumber)
-        //                                               );
+            var rowsAffected = await db.Products.Where(p => p.ProductGuid == guid)
+                                             .ExecuteUpdateAsync(updates => updates
+                                                 .SetProperty(p => p.SkuNumber, product.SkuNumber)
+                                                 .SetProperty(p => p.CategoryGuid, product.CategoryGuid)
+                                                 .SetProperty(p => p.RecommendationId, product.RecommendationId)
+                                                 .SetProperty(p => p.Title, product.Title)
+                                                 .SetProperty(p => p.Price, product.Price)
+                                                 .SetProperty(p => p.SalePrice, product.SalePrice)
+                                                 .SetProperty(p => p.ProductArtUrl, product.ProductArtUrl)
+                                                 .SetProperty(p => p.Description, product.Description)
+                                                 .SetProperty(p => p.ProductDetails, product.ProductDetails)
+                                                 .SetProperty(p => p.Inventory, product.Inventory)
+                                                 .SetProperty(p => p.LeadTime, product.LeadTime)
+            );
 
-        //    return rowsAffected == 0 ? TypedResults.NotFound() : TypedResults.Ok();
+            return rowsAffected == 0 ? TypedResults.NotFound() : TypedResults.Ok();
 
-        //})
-        //.WithName("UpdateProduct")
-        //.WithOpenApi();
+        })
+        .WithName("UpdateProduct")
+        .WithOpenApi();
 
         return group;
     }

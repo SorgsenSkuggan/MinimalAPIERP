@@ -1,6 +1,4 @@
-﻿
-
-// FASE 1
+﻿// FASE 1
 using ERP.Api;
 using ERP.Extensions;
 using MinimalAPIERP.Infraestructure.Automapper;

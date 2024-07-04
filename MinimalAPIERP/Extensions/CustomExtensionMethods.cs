@@ -7,6 +7,7 @@ using Microsoft.OpenApi.Models;
 using System.Text.Json.Serialization;
 using System.Text.Json;
 using Microsoft.Extensions.Options;
+using MinimalAPIERP.Data;
 
 namespace ERP.Extensions
 {
@@ -14,10 +15,11 @@ namespace ERP.Extensions
     /// Extensiones personalizadas del tipo IServiceCollection
     /// </summary>
     public static class CustomExtensionMethods{
-        public static IServiceCollection AddCustomSqlServerDb(this IServiceCollection services, IConfiguration configuration)
-        {
+        public static IServiceCollection AddCustomSqlServerDb(this IServiceCollection services, IConfiguration configuration){
             var connectionString = configuration.GetConnectionString("dbconnection") ?? "Data Source=(localdb)\\mssqllocaldb;Initial Catalog=PartsUnlimitedWebsite;Integrated Security=true";
-            services.AddSqlServer<AppDbContext>(connectionString);
+            //services.AddSqlServer<AppDbContext>(connectionString);
+            services.AddDbContext<AppDbContext>(options => 
+                options.UseSqlServer(connectionString));
 
             return services;
         }
@@ -110,7 +112,7 @@ namespace ERP.Extensions
                 try{
                     var context = scope.ServiceProvider.GetRequiredService<AppDbContext>();
                     dbCreated = context.Database.EnsureCreated();
-                    //if (dbCreated) DbInitializer.Initialize(context);
+                    if (dbCreated) DbInitializer.Initialize(context);
                 }catch (Exception ex){
                     var logger = scope.ServiceProvider.GetRequiredService<ILogger<Program>>();
                     logger.LogError(ex, "An error occurred creating the DB.");

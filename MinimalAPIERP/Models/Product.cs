@@ -16,7 +16,7 @@ public partial class Product
 
     public string SkuNumber { get; set; } = null!;
 
-    public int CategoryId { get; set; }
+    public Guid CategoryGuid { get; set; }
 
     public int RecommendationId { get; set; }
 

@@ -29,14 +29,15 @@ internal static class RaincheckApi
         .WithName("GetStore")
         .WithOpenApi();
 
-        group.MapGet("/rainchecks", async Task<Results<Ok<IList<Raincheck>>, NotFound>> (AppDbContext db) =>
-            await db.Rainchecks
+        group.MapGet("/rainchecks", async Task<Results<Ok<IList<RaincheckDto>>, NotFound>> (AppDbContext db, IMapper mapper) => {
+            return mapper.Map<RaincheckDto>(await db.Rainchecks
                 .Include(s => s.Product)
                 .Include(s => s.Store)
-                .ToListAsync()
-                    is IList<Raincheck> rainchecks
+                .ToListAsync())
+                    is IList<RaincheckDto> rainchecks
                         ? TypedResults.Ok(rainchecks)
-                        : TypedResults.NotFound())
+                        : TypedResults.NotFound();
+         })
         .WithOpenApi();
 
         //group.MapGet("/rainchecksb", async (AppDbContext db, int pageSize = 10, int page = 0) =>
@@ -89,7 +90,7 @@ internal static class RaincheckApi
         .WithName("GetRainchecksPaginatedWithJsonOptions")
         .WithOpenApi();
 
-        group.MapGet("/rainchecksd", async Task<Results<Ok<List<RaincheckDto>>, NotFound>> (AppDbContext db, int pageSize = 10, int page = 0) =>
+        group.MapGet("/rainchecksd", async Task<Results<Ok<List<RaincheckDto>>, NotFound>> (AppDbContext db, int pageSize = 10, int page = 0) => 
         {
             var data = await db.Rainchecks
                 .OrderBy(s => s.RaincheckId)
@@ -126,6 +127,57 @@ internal static class RaincheckApi
         .WithName("GetRainchecksPaginated")
         .WithOpenApi();
 
+        group.MapPost("/rainchecks", async Task<Created<Raincheck>> (AppDbContext db, Raincheck newRaincheck) => {
+            var raincheck = new Raincheck
+            {
+                RaincheckId = db.Rainchecks.Last().RaincheckId + 1,
+                RaincheckGuid = Guid.NewGuid(),
+                Name = newRaincheck.Name,
+                ProductGuid = newRaincheck.ProductGuid,
+                Count = newRaincheck.Count,
+                SalePrice = newRaincheck.SalePrice,
+                StoreGuid = newRaincheck.StoreGuid
+            };
+
+            db.Rainchecks.Add(raincheck);
+            await db.SaveChangesAsync();
+
+            return TypedResults.Created($"/rainchecks/{raincheck.RaincheckGuid}", raincheck);
+        })
+        .WithName("NewRaincheck")
+        .WithOpenApi();
+
+        group.MapDelete("rainchecks/{guid}", async Task<Results<NotFound, Ok>> (AppDbContext db, Guid guid) =>
+        {
+            var rowsAffected = await db.Rainchecks.Where(r => r.RaincheckGuid == guid)
+                                             .ExecuteDeleteAsync();
+
+            return rowsAffected == 0 ? TypedResults.NotFound() : TypedResults.Ok();
+        })
+        .WithName("DeleteRaincheck")
+        .WithOpenApi();
+
+        group.MapPut("rainchecks/{guid}", async Task<Results<Ok, NotFound, BadRequest>> (AppDbContext db, Guid guid, Raincheck raincheck) =>
+        {
+            if (guid != raincheck.RaincheckGuid)
+            {
+                return TypedResults.BadRequest();
+            }
+
+            var rowsAffected = await db.Rainchecks.Where(r => r.RaincheckGuid == guid)
+                                                .ExecuteUpdateAsync(updates => updates
+                                                    .SetProperty(r => r.Name, raincheck.Name)
+                                                    .SetProperty(r => r.ProductGuid, raincheck.RaincheckGuid)
+                                                    .SetProperty(r => r.Count, raincheck.Count)
+                                                    .SetProperty(r => r.SalePrice, raincheck.SalePrice)
+                                                    .SetProperty(r => r.StoreGuid, raincheck.StoreGuid)
+            );
+
+            return rowsAffected == 0 ? TypedResults.NotFound() : TypedResults.Ok();
+
+        })
+        .WithName("UpdateRaincheck")
+        .WithOpenApi();
 
         return group;
     }

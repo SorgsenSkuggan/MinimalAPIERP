@@ -6,4 +6,7 @@ using Microsoft.EntityFrameworkCore;
 namespace ERP.Data;
 
 public partial class AppDbContext : DbContext{
+    public override void Dispose(){
+        base.Dispose();
+    }
 }

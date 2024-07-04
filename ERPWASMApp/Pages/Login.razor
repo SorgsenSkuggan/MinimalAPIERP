@@ -1,0 +1,23 @@
+﻿@page "/login"
+@attribute [AllowAnonymous]
+@inject ERPWASMApp.Services.ERPAuthenticationStateProvider _authenticationStateProvider
+@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager
+
+<h3>Login</h3>
+
+<button class="btn btn-primary" @onclick="OnNormalLoginClicked">Login as normal user</button>
+<button class="btn btn-primary" @onclick="OnAdminLoginClicked">Login as admin</button>
+
+@code {
+
+    private void OnNormalLoginClicked()
+    {
+        _authenticationStateProvider.TestSignIn();
+        _navigationManager.NavigateTo("/");
+    }
+    private void OnAdminLoginClicked(MouseEventArgs obj)
+    {
+        _authenticationStateProvider.TestAdminSignIn();
+        _navigationManager.NavigateTo("/");
+    }
+}

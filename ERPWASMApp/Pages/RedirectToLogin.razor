@@ -1,0 +1,10 @@
+﻿@inject Microsoft.AspNetCore.Components.NavigationManager _navigationManager
+
+<h3>Redirecting...</h3>
+
+@code {
+    protected override void OnInitialized()
+    {
+        _navigationManager.NavigateTo("/login");
+    }
+}
