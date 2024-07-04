@@ -14,7 +14,7 @@ using System.Reflection;
 [assembly: System.Reflection.AssemblyCompanyAttribute("MinimalAPIERP")]
 [assembly: System.Reflection.AssemblyConfigurationAttribute("Debug")]
 [assembly: System.Reflection.AssemblyFileVersionAttribute("1.0.0.0")]
-[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+f67b70a1e5bdd37a1bc851b59fd0b966cb850318")]
+[assembly: System.Reflection.AssemblyInformationalVersionAttribute("1.0.0+7df2dfb18f8b777d6ee15bb6be4cb3fdc2eb55ae")]
 [assembly: System.Reflection.AssemblyProductAttribute("MinimalAPIERP")]
 [assembly: System.Reflection.AssemblyTitleAttribute("MinimalAPIERP")]
 [assembly: System.Reflection.AssemblyVersionAttribute("1.0.0.0")]
